@@ -37,12 +37,12 @@ public class RocketToMoonModel extends GraphicsProgram{
 		Moon moon = new Moon(FRAME_WIDTH/2-EARTH_SIZE/2, FRAME_HEIGHT/2-MEAN_LUNAR_DISTANCE, MOON_SIZE, MOON_SIZE);
 		add(moon);
 		double angle = 0.0;
-		double angleStepSize = LUNAR_MOVEMENT_PER_HOUR;
-		double circ = Math.PI * MEAN_LUNAR_DISTANCE*2;
-		while (angle < circ){
-			moon.setLocation(MEAN_LUNAR_DISTANCE*Math.cos(angle)+FRAME_WIDTH/2, MEAN_LUNAR_DISTANCE*Math.sin(angle)+FRAME_HEIGHT/2);
+		double angleStepSize = LUNAR_MOVEMENT_PER_HOUR*Math.PI/180;
+		while (angle < 2 * Math.PI){
 			angle += angleStepSize;
-			pause(5);
+			moon.setLocation(MEAN_LUNAR_DISTANCE*Math.cos(angle)+FRAME_WIDTH/2, MEAN_LUNAR_DISTANCE*Math.sin(angle)+FRAME_HEIGHT/2);
+			pause(60);
+			//60ms = 60 Earth minutes
 		}
 	}
 	
