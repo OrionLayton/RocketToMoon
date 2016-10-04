@@ -7,8 +7,8 @@ public class RocketToMoonModel extends GraphicsProgram{
 	
 	private static final int FRAME_WIDTH = 1500;
 	private static final int FRAME_HEIGHT = 1000;
-	private static final double ROCKET_WIDTH = 1;
-	private static final double ROCKET_HEIGHT = 5;
+	private static final double ROCKET_WIDTH = 2;
+	private static final double ROCKET_HEIGHT = 8;
 	//Size XL rocket for viewing clarity.
 	private static final double EARTH_SIZE = 15;
 	private static final double EARTH_LEVEL = FRAME_HEIGHT/2-EARTH_SIZE/2;
@@ -28,6 +28,7 @@ public class RocketToMoonModel extends GraphicsProgram{
 	
 	public void init(){
 		this.setSize(FRAME_WIDTH,FRAME_HEIGHT);
+		this.setBackground(Color.BLACK);
 	}
 	public void run(){
 		Earth earth = new Earth(FRAME_WIDTH/2-EARTH_SIZE/2, EARTH_LEVEL, EARTH_SIZE, EARTH_SIZE);
@@ -36,6 +37,13 @@ public class RocketToMoonModel extends GraphicsProgram{
 		add(rocket);
 		Moon moon = new Moon(FRAME_WIDTH/2-EARTH_SIZE/2, FRAME_HEIGHT/2-MEAN_LUNAR_DISTANCE, MOON_SIZE, MOON_SIZE);
 		add(moon);
+		lunarOrbit(moon);
+		rocketLaunch(rocket);
+	}
+	public void rocketLaunch(Rocket rocket){
+		
+	}
+	public void lunarOrbit(Moon moon){
 		double angle = 0.0;
 		double angleStepSize = LUNAR_MOVEMENT_PER_HOUR*Math.PI/180;
 		while (angle < 2 * Math.PI){
@@ -45,5 +53,4 @@ public class RocketToMoonModel extends GraphicsProgram{
 			//60ms = 60 Earth minutes
 		}
 	}
-	
 }

@@ -6,5 +6,6 @@ public class Earth extends GOval{
 		super(x, y, width, height);
 		setFilled(true);
 		setFillColor(Color.BLUE);
+		setColor(Color.WHITE);
 	}
 }
