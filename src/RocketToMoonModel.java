@@ -1,6 +1,9 @@
 import java.awt.Color;
 import java.awt.Event;
+import java.awt.Font;
 
+import acm.graphics.GLabel;
+import acm.graphics.GObject;
 import acm.graphics.GOval;
 import acm.program.GraphicsProgram;
 
@@ -57,13 +60,33 @@ public class RocketToMoonModel extends GraphicsProgram{
 		double angle = 0.0;
 		double angleStepSize = LUNAR_MOVEMENT_PER_HOUR*Math.PI/180;
 		double noonInRadians = 270 * Math.PI / 180;
-		double rocketSteps = (FRAME_HEIGHT/2-MEAN_LUNAR_DISTANCE)/24;
-		while (getElementAt(rocket.getLocation()) != moon){
+		double rocketSteps = (FRAME_HEIGHT/2-MEAN_LUNAR_DISTANCE)/23.9;
+		while (getCollidingObject(moon) == null){
 			angle += angleStepSize;
 			moon.setLocation(MEAN_LUNAR_DISTANCE*Math.cos(angle)+FRAME_WIDTH/2, MEAN_LUNAR_DISTANCE*Math.sin(angle)+FRAME_HEIGHT/2);
 			rocket.move(0, -rocketSteps);
 			pause(6);
 			//60ms = 60 Earth minutes
+		}
+		GLabel tada = new GLabel("MOON LANDING!", FRAME_WIDTH/2, FRAME_HEIGHT/3);
+		tada.setFont(new Font("Serif", Font.BOLD, 64));
+		tada.move(-tada.getWidth()/2, 0);
+		tada.setColor(Color.WHITE);
+		add(tada);
+	}
+	private GObject getCollidingObject(Moon moon){
+		double x = moon.getX();
+		double y = moon.getY();
+		if(getElementAt(x, y) != null){
+			return getElementAt(x, y);
+		} else if (getElementAt(x + (MOON_SIZE), y) != null){
+			return getElementAt(x + (MOON_SIZE), y);
+		} else if (getElementAt(x, y + (MOON_SIZE)) != null){
+			return getElementAt(x, y + (MOON_SIZE));
+		} else if (getElementAt(x + (MOON_SIZE), y + (MOON_SIZE)) != null){
+			return getElementAt(x + (MOON_SIZE), y + (MOON_SIZE));
+		} else {
+			return null;
 		}
 	}
 }
