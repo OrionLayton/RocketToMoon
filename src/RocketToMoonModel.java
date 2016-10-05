@@ -38,29 +38,31 @@ public class RocketToMoonModel extends GraphicsProgram{
 		add(rocket);
 		Moon moon = new Moon(FRAME_WIDTH/2, FRAME_HEIGHT/2-MEAN_LUNAR_DISTANCE, MOON_SIZE, MOON_SIZE);
 		add(moon);
-		lunarOrbit(moon);
+		lunarOrbit(moon, rocket);
 		
 	}
-	public void rocketLaunch(Rocket rocket, Moon moon){
+	public void rocketLaunch(Rocket rocket){
 		double y = FRAME_HEIGHT/2;
 		double moonIntersect = FRAME_HEIGHT/2-MEAN_LUNAR_DISTANCE;
 		while (y > moonIntersect){
 			rocket.move(0, -1);
-			pause(5);
+			pause(500);
 		}
 	}
-	public void LaunchWindow(Event e){
+	//public LaunchWindow(Event e){
 		
-	}
-	public void lunarOrbit(Moon moon){
-		//moon.addActionListener(moon);
+//	}
+	public void lunarOrbit(Moon moon, Rocket rocket){
+		//moon.addActionListener(listener);
 		double angle = 0.0;
 		double angleStepSize = LUNAR_MOVEMENT_PER_HOUR*Math.PI/180;
 		double noonInRadians = 270 * Math.PI / 180;
-		while (angle < 2 * Math.PI){
+		double rocketSteps = (FRAME_HEIGHT/2-MEAN_LUNAR_DISTANCE)/24;
+		while (getElementAt(rocket.getLocation()) != moon){
 			angle += angleStepSize;
 			moon.setLocation(MEAN_LUNAR_DISTANCE*Math.cos(angle)+FRAME_WIDTH/2, MEAN_LUNAR_DISTANCE*Math.sin(angle)+FRAME_HEIGHT/2);
-			pause(60);
+			rocket.move(0, -rocketSteps);
+			pause(6);
 			//60ms = 60 Earth minutes
 		}
 	}
