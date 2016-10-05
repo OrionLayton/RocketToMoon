@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.Event;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 
 import acm.graphics.GLabel;
 import acm.graphics.GObject;
@@ -22,12 +23,12 @@ public class RocketToMoonModel extends GraphicsProgram{
 	//The moon is approx. 27% the size of the earth.
 	private static final double EARTH_RADII = EARTH_SIZE/2;
 	private static final double MEAN_LUNAR_DISTANCE = EARTH_RADII*60.32;
+	private static final double MEAN_LUNAR_DIST_MILES = 3959*60.32;
 	//The distance changes over the course of the orbit but this is the *mean*, relative to Earth's radius
 	private static final double ROCKET_TOP_X = FRAME_WIDTH/2;
 	private static final double ROCKET_TOP_Y = EARTH_LEVEL-ROCKET_HEIGHT*1.5;
 	private static final int SEGMENTS = 3;
 	private static final double LUNAR_ORBIT_DAYS = 27;
-	private static final double LUNAR_MOVEMENT_PER_DAY = 360/LUNAR_ORBIT_DAYS;
 	private static final double LUNAR_MOVEMENT_PER_HOUR = 360/(LUNAR_ORBIT_DAYS*24);
 	
 	public void init(){
@@ -52,11 +53,7 @@ public class RocketToMoonModel extends GraphicsProgram{
 			pause(500);
 		}
 	}
-	//public LaunchWindow(Event e){
-		
-//	}
 	public void lunarOrbit(Moon moon, Rocket rocket){
-		//moon.addActionListener(listener);
 		double angle = 0.0;
 		double angleStepSize = LUNAR_MOVEMENT_PER_HOUR*Math.PI/180;
 		double noonInRadians = 270 * Math.PI / 180;
@@ -65,9 +62,12 @@ public class RocketToMoonModel extends GraphicsProgram{
 			angle += angleStepSize;
 			moon.setLocation(MEAN_LUNAR_DISTANCE*Math.cos(angle)+FRAME_WIDTH/2, MEAN_LUNAR_DISTANCE*Math.sin(angle)+FRAME_HEIGHT/2);
 			rocket.move(0, -rocketSteps);
-			pause(6);
+			pause(60);
 			//60ms = 60 Earth minutes
 		}
+		tada();	
+	}
+	private void tada(){
 		GLabel tada = new GLabel("MOON LANDING!", FRAME_WIDTH/2, FRAME_HEIGHT/3);
 		tada.setFont(new Font("Serif", Font.BOLD, 64));
 		tada.move(-tada.getWidth()/2, 0);
