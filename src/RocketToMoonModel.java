@@ -15,7 +15,7 @@ public class RocketToMoonModel extends GraphicsProgram
 								implements ActionListener{
 	
 	private static final int FRAME_WIDTH = 1500;
-	private static final int FRAME_HEIGHT = 1100;
+	private static final int FRAME_HEIGHT = 1000;
 	private static final double ROCKET_WIDTH = 3;
 	private static final double ROCKET_HEIGHT = 12;
 	//Size XL rocket for viewing clarity.
@@ -109,13 +109,13 @@ public class RocketToMoonModel extends GraphicsProgram
 	}
 	private void splosion(){
 		GStar star1 = new GStar(60);
-		GStar star2 = new GStar(30);
-		GStar star3 = new GStar(15);
-		GStar star4 = new GStar(7);
-		star1.setFillColor(Color.YELLOW);
+		GStar star2 = new GStar(60);
+		GStar star3 = new GStar(60);
+		GStar star4 = new GStar(60);
+		star1.setFillColor(Color.PINK);
 		star2.setFillColor(Color.ORANGE);
 		star3.setFillColor(Color.RED);
-		star4.setFillColor(Color.PINK);
+		star4.setFillColor(Color.YELLOW);
 		star1.setFilled(true);
 		star2.setFilled(true);
 		star3.setFilled(true);
@@ -124,9 +124,15 @@ public class RocketToMoonModel extends GraphicsProgram
 		star2.setLocation(moon.getLocation());
 		star3.setLocation(moon.getLocation());
 		star4.setLocation(moon.getLocation());
+		star2.move(-10, 10);
+		star3.move(10, -10);
+		star4.move(-10, -10);
 		add(star1);
+		pause(5);
 		add(star2);
+		pause(5);
 		add(star3);
+		pause(5);
 		add(star4);
 	}
 	private void tada(){
