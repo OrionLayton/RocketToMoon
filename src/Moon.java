@@ -9,5 +9,4 @@ public class Moon extends GOval{
 		setFillColor(Color.WHITE);
 		setColor(Color.WHITE);
 	}
-
 }

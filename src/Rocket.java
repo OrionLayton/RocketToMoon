@@ -13,6 +13,8 @@ public class Rocket extends GCompound{
 		capsule.addEdge(rocketWidth/2, capBtm-rocketTopY);
 		capsule.addEdge(-rocketWidth, 0);
 		capsule.setColor(Color.WHITE);
+		capsule.setFilled(true);
+		capsule.setFillColor(Color.RED);
 		add(capsule);
 		
 		GRect segment1 = new GRect(rocketTopX-rocketWidth/2, capBtm, rocketWidth, segmentLength);
@@ -31,5 +33,8 @@ public class Rocket extends GCompound{
 		segment3.setFillColor(Color.WHITE);
 		add(segment3);
 		}
+
+	public Rocket() {
+	}
 	
 }

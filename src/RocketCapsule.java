@@ -1,5 +1,6 @@
+import java.awt.Color;
+
 import acm.graphics.GPolygon;
-import acm.graphics.GRect;
 
 public class RocketCapsule extends GPolygon{
 	public void setPeakX(double peakX){		
@@ -15,5 +16,6 @@ public class RocketCapsule extends GPolygon{
 		capsule.addEdge(peakX, peakY);
 		capsule.addEdge(width/2, height);
 		capsule.addEdge(-width, 0);
+		
 	}
 }
