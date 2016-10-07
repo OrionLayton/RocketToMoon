@@ -32,6 +32,15 @@ public class Rocket extends GCompound{
 		segment3.setFilled(true);
 		segment3.setFillColor(Color.WHITE);
 		add(segment3);
+		
+		GPolygon flames = new GPolygon();
+		flames.addEdge(rocketTopX, rocketTopY+rocketHeight);
+		flames.addEdge(rocketWidth/2+3, segmentLength*5);
+		flames.addEdge(-rocketWidth-6, 0);
+		flames.setColor(Color.YELLOW);
+		flames.setFilled(true);
+		flames.setFillColor(Color.ORANGE);
+		add(flames);
 		}
 
 	public Rocket() {

@@ -68,15 +68,17 @@ public class RocketToMoonModel extends GraphicsProgram
 		add(new JLabel("Yaw"), SOUTH);
 		add(yaw, SOUTH);
 		add(new JButton("Play"), SOUTH);
-		earth = new Earth(FRAME_WIDTH/2-EARTH_SIZE/2, EARTH_LEVEL, EARTH_SIZE, EARTH_SIZE);
-		add(earth);
+		
 		rocket = new Rocket(ROCKET_TOP_X, ROCKET_TOP_Y, ROCKET_WIDTH, ROCKET_HEIGHT, EARTH_LEVEL, SEGMENTS);
 		add(rocket);
+		earth = new Earth(FRAME_WIDTH/2-EARTH_SIZE/2, EARTH_LEVEL, EARTH_SIZE, EARTH_SIZE);
+		add(earth);
 		moon = new Moon(FRAME_WIDTH/2, FRAME_HEIGHT/2-MEAN_LUNAR_DISTANCE, MOON_SIZE, MOON_SIZE);
 		add(moon);
 		moon.setVisible(false);
 		rocketSpeed.setEnabled(true);
 		yaw.setEnabled(true);
+		rocketSpeed.setAutoscrolls(true);
 	}
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals("Play")) lunarOrbit();
@@ -101,7 +103,31 @@ public class RocketToMoonModel extends GraphicsProgram
 				gameOver();
 			}
 		}
+		splosion();
+		remove(rocket);
 		tada();
+	}
+	private void splosion(){
+		GStar star1 = new GStar(60);
+		GStar star2 = new GStar(30);
+		GStar star3 = new GStar(15);
+		GStar star4 = new GStar(7);
+		star1.setFillColor(Color.YELLOW);
+		star2.setFillColor(Color.ORANGE);
+		star3.setFillColor(Color.RED);
+		star4.setFillColor(Color.PINK);
+		star1.setFilled(true);
+		star2.setFilled(true);
+		star3.setFilled(true);
+		star4.setFilled(true);
+		star1.setLocation(moon.getLocation());
+		star2.setLocation(moon.getLocation());
+		star3.setLocation(moon.getLocation());
+		star4.setLocation(moon.getLocation());
+		add(star1);
+		add(star2);
+		add(star3);
+		add(star4);
 	}
 	private void tada(){
 		tada = new GLabel("MOON LANDING!", FRAME_WIDTH/2, FRAME_HEIGHT/3);
