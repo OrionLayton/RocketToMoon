@@ -54,21 +54,23 @@ public class RocketToMoonModel extends GraphicsProgram
 	private GLabel gameOver;
 	private GLabel tada;
 	double r = ROCKET_STEPS;
+	boolean go = false;
 
 	public void init(){
 		this.setSize(FRAME_WIDTH,FRAME_HEIGHT);
 		this.setBackground(Color.BLACK);
 		addMouseListeners();
 		addActionListeners();
-	//	add(new JButton("Launch"), SOUTH);
+	//	add(new JButton("Launch"), NORTH);
 		rocketSpeed = new JSlider(MIN_RKT_SPEED, MAX_RKT_SPEED, DEFAULT_RKT_SPEED);
-		add(new JLabel("Throttle"),SOUTH);
-		add(rocketSpeed, SOUTH);
+		add(new JLabel("Throttle"),NORTH);
+		add(rocketSpeed, NORTH);
 		yaw = new JSlider(MIN_YAW, MAX_YAW, DEFAULT_YAW);
-		add(new JLabel("Yaw"), SOUTH);
-		add(yaw, SOUTH);
-		add(new JButton("Play"), SOUTH);
-		
+		add(new JLabel("Yaw"), NORTH);
+		add(yaw, NORTH);
+		add(new JButton("Play"), NORTH);
+		add(new JButton("Quit"), NORTH);
+
 		rocket = new Rocket(ROCKET_TOP_X, ROCKET_TOP_Y, ROCKET_WIDTH, ROCKET_HEIGHT, EARTH_LEVEL, SEGMENTS);
 		add(rocket);
 		earth = new Earth(FRAME_WIDTH/2-EARTH_SIZE/2, EARTH_LEVEL, EARTH_SIZE, EARTH_SIZE);
@@ -81,8 +83,13 @@ public class RocketToMoonModel extends GraphicsProgram
 		rocketSpeed.setAutoscrolls(true);
 	}
 	public void actionPerformed(ActionEvent e) {
-		if (e.getActionCommand().equals("Play")) lunarOrbit();
+		if (e.getActionCommand().equals("Play")){
+			go = true;
+		} else if (e.getActionCommand().equals("Quit")){
+			go = false;
+		}
 	} 
+
 	public double getRocketSpeed(){
 		return (double)rocketSpeed.getValue();
 	}
@@ -90,23 +97,36 @@ public class RocketToMoonModel extends GraphicsProgram
 		return (double)yaw.getValue();
 	}
 	public void lunarOrbit(){
-		double angle = 0.0;
-		double angleStepSize = LUNAR_MOVEMENT_PER_HOUR*Math.PI/180;
-		while (getCollidingObject() != rocket){
-			rocket.move(getYaw(), getRocketSpeed()*-.1045);
-			angle += angleStepSize;
-			moon.setLocation(MEAN_LUNAR_DISTANCE*Math.cos(angle)+FRAME_WIDTH/2, MEAN_LUNAR_DISTANCE*Math.sin(angle)+FRAME_HEIGHT/2);
-			moon.setVisible(true);
-			pause(6);
-			//60ms = 60 Earth minutes
-			if(angle > ((2*Math.PI))*.75){
-				gameOver();
+		title();
+
+		while(go){
+				opening();
+
+				double rocketFuel = 500;
+				double angle = 0.0;
+				double angleStepSize = LUNAR_MOVEMENT_PER_HOUR*Math.PI/180;
+				while (getCollidingObject() != rocket){
+					rocket.move(getYaw(), getRocketSpeed()*-.1045);
+					angle += angleStepSize;
+					moon.setLocation(MEAN_LUNAR_DISTANCE*Math.cos(angle)+FRAME_WIDTH/2, MEAN_LUNAR_DISTANCE*Math.sin(angle)+FRAME_HEIGHT/2);
+					moon.setVisible(true);
+					pause(60);
+					//60ms = 60 Earth minutes
+					if(rocketFuel <= 0){
+						gameOver();
+					}
+					rocketFuel -= 1;
+				}
+				splosion();
+				remove(rocket);
+				tada();
 			}
-		}
-		splosion();
-		remove(rocket);
-		tada();
+			
+		pause(1000);
+	
 	}
+			
+	
 	private void splosion(){
 		GStar star1 = new GStar(60);
 		GStar star2 = new GStar(60);
@@ -221,14 +241,12 @@ public class RocketToMoonModel extends GraphicsProgram
 		}
 	}
 	public void opening(){
-		title();
 		three();
 		two();
 		one();
 		liftOff();
 	}
 	public void run(){
-		opening();
-		lunarOrbit();
+		lunarOrbit();		
 	}
 }
