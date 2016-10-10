@@ -99,9 +99,8 @@ public class RocketToMoonModel extends GraphicsProgram
 	public void lunarOrbit(){
 		title();
 
-		while(go){
+		if(go){
 				opening();
-
 				double rocketFuel = 500;
 				double angle = 0.0;
 				double angleStepSize = LUNAR_MOVEMENT_PER_HOUR*Math.PI/180;
@@ -120,12 +119,11 @@ public class RocketToMoonModel extends GraphicsProgram
 				splosion();
 				remove(rocket);
 				tada();
+			} else{
+				pause(1000);
 			}
-			
-		pause(1000);
-	
-	}
-			
+		
+	}	
 	
 	private void splosion(){
 		GStar star1 = new GStar(60);
