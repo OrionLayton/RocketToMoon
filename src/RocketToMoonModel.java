@@ -29,6 +29,7 @@ public class RocketToMoonModel extends GraphicsProgram
 	private static final double MEAN_LUNAR_DISTANCE = EARTH_RADII*60.32;
 	private static final double MEAN_LUNAR_DIST_MILES = 3959*60.32;
 	//The distance changes over the course of the orbit but this is the *mean*, relative to Earth's radius
+	private static final double POINTS_TO_MILES = 20;
 	private static final double ROCKET_TOP_X = FRAME_WIDTH/2;
 	private static final double ROCKET_TOP_Y = EARTH_LEVEL-ROCKET_HEIGHT*1.5;
 	private static final int SEGMENTS = 3;
@@ -70,23 +71,22 @@ public class RocketToMoonModel extends GraphicsProgram
 		this.setBackground(Color.BLACK);
 		addMouseListeners();
 		addActionListeners();
-		earthSize = new GLabel("Earth Diameter: "+ EARTH_RADIUS_IN_MILES*2+" miles", 50,50);
+		earthSize = new GLabel("Earth Diameter: "+ (int)EARTH_RADIUS_IN_MILES*2+" miles", 50,50);
 		earthSize.setColor(Color.WHITE);
 		earthSize.setFont(new Font("Serif", Font.BOLD, 24));
 		add(earthSize);
-		moonSize = new GLabel("Moon Diameter: "+ (EARTH_RADIUS_IN_MILES*2)*.27+" miles", 50,75);
+		moonSize = new GLabel("Moon Diameter: "+ (int)(EARTH_RADIUS_IN_MILES*2)*.27+" miles", 50,75);
 		moonSize.setColor(Color.WHITE);
 		moonSize.setFont(new Font("Serif", Font.BOLD, 24));
 		add(moonSize);
-		orbitDays = new GLabel("Lunar Orbit Time: "+ LUNAR_ORBIT_DAYS+" Earth days", 50,100);
+		orbitDays = new GLabel("Lunar Orbit Time: "+ (int)LUNAR_ORBIT_DAYS+" Earth days", 50,100);
 		orbitDays.setColor(Color.WHITE);
 		orbitDays.setFont(new Font("Serif", Font.BOLD, 24));
 		add(orbitDays);
-		lunarDist = new GLabel("Earth to Moon: "+ MEAN_LUNAR_DIST_MILES+" miles", 50,125);
+		lunarDist = new GLabel("Earth to Moon: approx. "+ (int)MEAN_LUNAR_DIST_MILES+" miles", 50,125);
 		lunarDist.setColor(Color.WHITE);
 		lunarDist.setFont(new Font("Serif", Font.BOLD, 24));
 		add(lunarDist);
-		
 		rocketSpeed = new JSlider(MIN_RKT_SPEED, MAX_RKT_SPEED, DEFAULT_RKT_SPEED);
 		add(new JLabel("Throttle"),NORTH);
 		add(rocketSpeed, NORTH);
@@ -124,7 +124,7 @@ public class RocketToMoonModel extends GraphicsProgram
 		return (double)yaw.getValue();
 	}
 	public void launchRocket(){
-		double rocketFuel = 500;
+		int rocketFuel = 500;
 		String strFuel ="";
 		String strEarthDist = "";
 		String strRktMoonDist = "";
@@ -138,13 +138,13 @@ public class RocketToMoonModel extends GraphicsProgram
 		fuel.setColor(Color.WHITE);
 		fuel.setFont(new Font("Serif", Font.BOLD, 24));
 		while (getCollidingObject() != rocket){	
-			strEarthDist = "Rocket Distance From Earth: " +(earth.getY()-rocket.getY())+" miles";
+			strEarthDist = "Rocket Distance From Earth: " +(rocketEarthDist(rocket.getLocation(), earth.getLocation())*POINTS_TO_MILES)+" miles";
 			strFuel = "Fuel remaining: " + rocketFuel;
-			strRktMoonDist = "Rocket Distance From Moon: "+rocketMoonDist(rocket.getLocation(), moon.getLocation())+" miles";
+			strRktMoonDist = "Rocket Distance From Moon: "+(rocketMoonDist(rocket.getLocation(), moon.getLocation())*POINTS_TO_MILES)+" miles";
 			rktEarthDist.setLabel(strEarthDist);
-			add(rktEarthDist);
+			//add(rktEarthDist);
 			rktMoonDist.setLabel(strRktMoonDist);
-			add(rktMoonDist);
+		//	add(rktMoonDist);
 			fuel.setLabel(strFuel);
 			add(fuel);
 			rocket.move(getYaw(), getRocketSpeed()*-.1045);
@@ -155,6 +155,9 @@ public class RocketToMoonModel extends GraphicsProgram
 			remove(rktMoonDist);
 			if(rocketFuel <= 0){
 				gameOver();
+				remove(rocket);
+				remove(fuel);
+				
 			}
 			rocketFuel -= 1;
 		}
@@ -164,8 +167,12 @@ public class RocketToMoonModel extends GraphicsProgram
 		tada();	
 	}
 	private double rocketMoonDist(GPoint rkt, GPoint moon){
-		double distance = 0;
-		distance = Math.sqrt(((rkt.getX()-moon.getX())*(rkt.getX()-moon.getX()))+((rkt.getY()-moon.getY())*(rkt.getY()-moon.getY())));
+		double distance = Math.sqrt(((rkt.getX()-moon.getX())*(rkt.getX()-moon.getX()))+((rkt.getY()-moon.getY())*(rkt.getY()-moon.getY())));
+		return distance;
+		
+	}
+	private double rocketEarthDist(GPoint rkt, GPoint earth){
+		double distance = Math.sqrt(((rkt.getX()-earth.getX())*(rkt.getX()-earth.getX()))+((rkt.getY()-earth.getY())*(rkt.getY()-earth.getY())));
 		return distance;
 	}
 	private void splosion(){
