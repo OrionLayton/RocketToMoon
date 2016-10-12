@@ -34,7 +34,7 @@ public class RocketToMoonModel extends GraphicsProgram
 	private static final int SEGMENTS = 3;
 	private static final double LUNAR_ORBIT_DAYS = 27;
 	private static final double LUNAR_MOVEMENT_PER_HOUR = 360/(LUNAR_ORBIT_DAYS*24);
-	private static final double ROCKET_STEPS = (FRAME_HEIGHT/2-MEAN_LUNAR_DISTANCE)/23.9;
+//	private static final double ROCKET_STEPS = (FRAME_HEIGHT/2-MEAN_LUNAR_DISTANCE)/23.9;
 	private static final int MIN_RKT_SPEED = 1;
 	private static final int MAX_RKT_SPEED = 99;
 	private static final int DEFAULT_RKT_SPEED = 9;
@@ -42,89 +42,132 @@ public class RocketToMoonModel extends GraphicsProgram
 	private static final int MAX_YAW = 1;
 	private static final int DEFAULT_YAW = 0;
 	private Earth earth;
-	private Moon moon;
+	//private Moon moon;
 	private Rocket rocket;
 	private JSlider rocketSpeed;
 	private JSlider yaw;
 	private GLabel title;
+	private GLabel clickAnywhere;
 	private GLabel three;
 	private GLabel two;
 	private GLabel one;
 	private GLabel liftOff;
 	private GLabel gameOver;
 	private GLabel tada;
-	double r = ROCKET_STEPS;
-	boolean go = false;
+	private OrbitingMoon moon;
+	private GLabel fuel;
+	private GLabel lunarDist;
+	private GLabel earthSize;
+	private GLabel moonSize;
+	private GLabel orbitDays;
+	private GLabel rktEarthDist;
+	private GLabel rktMoonDist;
+	
+	Thread moonThread;
 
 	public void init(){
 		this.setSize(FRAME_WIDTH,FRAME_HEIGHT);
 		this.setBackground(Color.BLACK);
 		addMouseListeners();
 		addActionListeners();
-	//	add(new JButton("Launch"), NORTH);
+		earthSize = new GLabel("Earth Diameter: "+ EARTH_RADIUS_IN_MILES*2+" miles", 50,50);
+		earthSize.setColor(Color.WHITE);
+		earthSize.setFont(new Font("Serif", Font.BOLD, 24));
+		add(earthSize);
+		moonSize = new GLabel("Moon Diameter: "+ (EARTH_RADIUS_IN_MILES*2)*.27+" miles", 50,75);
+		moonSize.setColor(Color.WHITE);
+		moonSize.setFont(new Font("Serif", Font.BOLD, 24));
+		add(moonSize);
+		orbitDays = new GLabel("Lunar Orbit Time: "+ LUNAR_ORBIT_DAYS+" Earth days", 50,100);
+		orbitDays.setColor(Color.WHITE);
+		orbitDays.setFont(new Font("Serif", Font.BOLD, 24));
+		add(orbitDays);
+		lunarDist = new GLabel("Earth to Moon: "+ MEAN_LUNAR_DIST_MILES+" miles", 50,125);
+		lunarDist.setColor(Color.WHITE);
+		lunarDist.setFont(new Font("Serif", Font.BOLD, 24));
+		add(lunarDist);
+		
 		rocketSpeed = new JSlider(MIN_RKT_SPEED, MAX_RKT_SPEED, DEFAULT_RKT_SPEED);
 		add(new JLabel("Throttle"),NORTH);
 		add(rocketSpeed, NORTH);
 		yaw = new JSlider(MIN_YAW, MAX_YAW, DEFAULT_YAW);
 		add(new JLabel("Yaw"), NORTH);
 		add(yaw, NORTH);
-		add(new JButton("Play"), NORTH);
-		add(new JButton("Quit"), NORTH);
-
 		rocket = new Rocket(ROCKET_TOP_X, ROCKET_TOP_Y, ROCKET_WIDTH, ROCKET_HEIGHT, EARTH_LEVEL, SEGMENTS);
 		add(rocket);
 		earth = new Earth(FRAME_WIDTH/2-EARTH_SIZE/2, EARTH_LEVEL, EARTH_SIZE, EARTH_SIZE);
 		add(earth);
-		moon = new Moon(FRAME_WIDTH/2, FRAME_HEIGHT/2-MEAN_LUNAR_DISTANCE, MOON_SIZE, MOON_SIZE);
+		moon = new OrbitingMoon(FRAME_WIDTH/2, FRAME_HEIGHT/2-MEAN_LUNAR_DISTANCE, MOON_SIZE, MOON_SIZE);
 		add(moon);
-		moon.setVisible(false);
-		rocketSpeed.setEnabled(true);
-		yaw.setEnabled(true);
-		rocketSpeed.setAutoscrolls(true);
+		moon.setVisible(true);
+		moonThread = new Thread(moon);
+	}
+	public void run(){	
+		title();
+		clickAnywhere();
+		waitForClick();
+		remove(clickAnywhere);
+		opening();
+		moonThread.start();
+		launchRocket();
+		
 	}
 	public void actionPerformed(ActionEvent e) {
-		if (e.getActionCommand().equals("Play")){
-			go = true;
-		} else if (e.getActionCommand().equals("Quit")){
-			go = false;
+		if (e.getActionCommand().equals("Launch")){
+			launchRocket();
 		}
 	} 
-
 	public double getRocketSpeed(){
 		return (double)rocketSpeed.getValue();
 	}
 	public double getYaw(){
 		return (double)yaw.getValue();
 	}
-	public void lunarOrbit(){
-		title();
-
-		if(go){
-				opening();
-				double rocketFuel = 500;
-				double angle = 0.0;
-				double angleStepSize = LUNAR_MOVEMENT_PER_HOUR*Math.PI/180;
-				while (getCollidingObject() != rocket){
-					rocket.move(getYaw(), getRocketSpeed()*-.1045);
-					angle += angleStepSize;
-					moon.setLocation(MEAN_LUNAR_DISTANCE*Math.cos(angle)+FRAME_WIDTH/2, MEAN_LUNAR_DISTANCE*Math.sin(angle)+FRAME_HEIGHT/2);
-					moon.setVisible(true);
-					pause(60);
-					//60ms = 60 Earth minutes
-					if(rocketFuel <= 0){
-						gameOver();
-					}
-					rocketFuel -= 1;
-				}
-				splosion();
-				remove(rocket);
-				tada();
-			} else{
-				pause(1000);
+	public void launchRocket(){
+		double rocketFuel = 500;
+		String strFuel ="";
+		String strEarthDist = "";
+		String strRktMoonDist = "";
+		rktEarthDist = new GLabel("", 50, 875);
+		rktEarthDist.setColor(Color.WHITE);
+		rktEarthDist.setFont(new Font("Serif", Font.BOLD, 24));
+		rktMoonDist = new GLabel("", 50, 900);
+		rktMoonDist.setColor(Color.WHITE);
+		rktMoonDist.setFont(new Font("Serif", Font.BOLD, 24));
+		fuel = new GLabel("", 50,925);
+		fuel.setColor(Color.WHITE);
+		fuel.setFont(new Font("Serif", Font.BOLD, 24));
+		while (getCollidingObject() != rocket){	
+			strEarthDist = "Rocket Distance From Earth: " +(earth.getY()-rocket.getY())+" miles";
+			strFuel = "Fuel remaining: " + rocketFuel;
+			strRktMoonDist = "Rocket Distance From Moon: "+rocketMoonDist(rocket.getLocation(), moon.getLocation())+" miles";
+			rktEarthDist.setLabel(strEarthDist);
+			add(rktEarthDist);
+			rktMoonDist.setLabel(strRktMoonDist);
+			add(rktMoonDist);
+			fuel.setLabel(strFuel);
+			add(fuel);
+			rocket.move(getYaw(), getRocketSpeed()*-.1045);
+			pause(60);
+		//60ms = 60 Earth minutes
+			remove(fuel);
+			remove(rktEarthDist);
+			remove(rktMoonDist);
+			if(rocketFuel <= 0){
+				gameOver();
 			}
-		
-	}	
-	
+			rocketFuel -= 1;
+		}
+		splosion();
+		remove(rocket);
+		remove(moon);
+		tada();	
+	}
+	private double rocketMoonDist(GPoint rkt, GPoint moon){
+		double distance = 0;
+		distance = Math.sqrt(((rkt.getX()-moon.getX())*(rkt.getX()-moon.getX()))+((rkt.getY()-moon.getY())*(rkt.getY()-moon.getY())));
+		return distance;
+	}
 	private void splosion(){
 		GStar star1 = new GStar(60);
 		GStar star2 = new GStar(60);
@@ -146,11 +189,11 @@ public class RocketToMoonModel extends GraphicsProgram
 		star3.move(10, -10);
 		star4.move(-10, -10);
 		add(star1);
-		pause(5);
+		pause(50);
 		add(star2);
-		pause(5);
+		pause(50);
 		add(star3);
-		pause(5);
+		pause(50);
 		add(star4);
 	}
 	private void tada(){
@@ -158,12 +201,20 @@ public class RocketToMoonModel extends GraphicsProgram
 		tada.setFont(new Font("Serif", Font.BOLD, 64));
 		tada.move(-tada.getWidth()/2, 0);
 		tada.setColor(Color.WHITE);
-		for(int i = 0; i < 10; i++){
+		for(int i = 0; i < 155; i++){
 			add(tada);
 			pause(50);
 			remove(tada);
+			pause(50);
 		}
-		add(tada);
+	}
+	private void clickAnywhere(){
+		clickAnywhere = new GLabel("click anywhere to begin", FRAME_WIDTH/2, FRAME_HEIGHT/3);
+		clickAnywhere.setFont(new Font("Serif", Font.BOLD, 48));
+		clickAnywhere.move(-clickAnywhere.getWidth()/2, 0);
+		clickAnywhere.setColor(Color.WHITE);
+		add(clickAnywhere);
+		
 	}
 	private void title(){
 		title = new GLabel("ASTRO NOT", FRAME_WIDTH/2, FRAME_HEIGHT/3);
@@ -244,7 +295,5 @@ public class RocketToMoonModel extends GraphicsProgram
 		one();
 		liftOff();
 	}
-	public void run(){
-		lunarOrbit();		
-	}
+	
 }
