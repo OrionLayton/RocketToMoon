@@ -1,7 +1,14 @@
+import java.applet.AudioClip;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.*;
-
+import acm.graphics.*;
+import acm.program.*;
+import acm.util.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.*;
 import java.util.*;
@@ -10,6 +17,7 @@ import java.util.*;
 import acm.graphics.*;
 
 import acm.program.GraphicsProgram;
+import acm.util.MediaTools;
 
 public class RocketToMoonModel extends GraphicsProgram
 								implements ActionListener{
@@ -29,7 +37,7 @@ public class RocketToMoonModel extends GraphicsProgram
 	private static final double MEAN_LUNAR_DISTANCE = EARTH_RADII*60.32;
 	private static final double MEAN_LUNAR_DIST_MILES = 3959*60.32;
 	//The distance changes over the course of the orbit but this is the *mean*, relative to Earth's radius
-	private static final double POINTS_TO_MILES = 20;
+	private static final double POINTS_TO_MILES = MEAN_LUNAR_DIST_MILES/MEAN_LUNAR_DISTANCE;
 	private static final double ROCKET_TOP_X = FRAME_WIDTH/2;
 	private static final double ROCKET_TOP_Y = EARTH_LEVEL-ROCKET_HEIGHT*1.5;
 	private static final int SEGMENTS = 3;
@@ -61,9 +69,17 @@ public class RocketToMoonModel extends GraphicsProgram
 	private GLabel earthSize;
 	private GLabel moonSize;
 	private GLabel orbitDays;
+	private GLabel timeScale;
 	private GLabel rktEarthDist;
 	private GLabel rktMoonDist;
-	
+	private AudioClip themeClip;
+	private AudioClip threeClip;
+	private AudioClip twoClip;
+	private AudioClip oneClip;
+	private AudioClip ignitionClip;
+	private AudioClip launchClip;
+	private AudioClip explosionClip;
+	private AudioClip gameOverClip;
 	Thread moonThread;
 
 	public void init(){
@@ -71,6 +87,7 @@ public class RocketToMoonModel extends GraphicsProgram
 		this.setBackground(Color.BLACK);
 		addMouseListeners();
 		addActionListeners();
+		addSound();
 		earthSize = new GLabel("Earth Diameter: "+ (int)EARTH_RADIUS_IN_MILES*2+" miles", 50,50);
 		earthSize.setColor(Color.WHITE);
 		earthSize.setFont(new Font("Serif", Font.BOLD, 24));
@@ -83,6 +100,10 @@ public class RocketToMoonModel extends GraphicsProgram
 		orbitDays.setColor(Color.WHITE);
 		orbitDays.setFont(new Font("Serif", Font.BOLD, 24));
 		add(orbitDays);
+		timeScale = new GLabel("Time Scale: 60ms = 1 hour", 50, 150 );
+		timeScale.setColor(Color.WHITE);
+		timeScale.setFont(new Font("Serif", Font.BOLD, 24));
+		add(timeScale);
 		lunarDist = new GLabel("Earth to Moon: approx. "+ (int)MEAN_LUNAR_DIST_MILES+" miles", 50,125);
 		lunarDist.setColor(Color.WHITE);
 		lunarDist.setFont(new Font("Serif", Font.BOLD, 24));
@@ -99,7 +120,7 @@ public class RocketToMoonModel extends GraphicsProgram
 		add(earth);
 		moon = new OrbitingMoon(FRAME_WIDTH/2, FRAME_HEIGHT/2-MEAN_LUNAR_DISTANCE, MOON_SIZE, MOON_SIZE);
 		add(moon);
-		moon.setVisible(true);
+		moon.setVisible(false);
 		moonThread = new Thread(moon);
 	}
 	public void run(){	
@@ -110,7 +131,17 @@ public class RocketToMoonModel extends GraphicsProgram
 		opening();
 		moonThread.start();
 		launchRocket();
-		
+	}
+	public void addSound(){
+		themeClip = MediaTools.loadAudioClip("Theme.wav");
+		threeClip = MediaTools.loadAudioClip("Three.wav");
+		twoClip = MediaTools.loadAudioClip("Two.wav");
+		oneClip = MediaTools.loadAudioClip("One.wav");
+		ignitionClip = MediaTools.loadAudioClip("Ignition.wav");
+		launchClip = MediaTools.loadAudioClip("Launch.wav");
+		explosionClip = MediaTools.loadAudioClip("Explosion.wav");
+		gameOverClip = MediaTools.loadAudioClip("GameOver.wav");
+
 	}
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals("Launch")){
@@ -124,6 +155,8 @@ public class RocketToMoonModel extends GraphicsProgram
 		return (double)yaw.getValue();
 	}
 	public void launchRocket(){
+		moon.setVisible(true);
+		launchClip.play();
 		int rocketFuel = 500;
 		String strFuel ="";
 		String strEarthDist = "";
@@ -138,11 +171,11 @@ public class RocketToMoonModel extends GraphicsProgram
 		fuel.setColor(Color.WHITE);
 		fuel.setFont(new Font("Serif", Font.BOLD, 24));
 		while (getCollidingObject() != rocket){	
-			strEarthDist = "Rocket Distance From Earth: " +(rocketEarthDist(rocket.getLocation(), earth.getLocation())*POINTS_TO_MILES)+" miles";
+			strEarthDist = "Rocket Distance From Earth: " +(rocketEarthDist()*POINTS_TO_MILES)+" miles";
 			strFuel = "Fuel remaining: " + rocketFuel;
-			strRktMoonDist = "Rocket Distance From Moon: "+(rocketMoonDist(rocket.getLocation(), moon.getLocation())*POINTS_TO_MILES)+" miles";
+			strRktMoonDist = "Rocket Distance From Moon: "+(rocketMoonDist()*POINTS_TO_MILES)+" miles";
 			rktEarthDist.setLabel(strEarthDist);
-			//add(rktEarthDist);
+		//	add(rktEarthDist);
 			rktMoonDist.setLabel(strRktMoonDist);
 		//	add(rktMoonDist);
 			fuel.setLabel(strFuel);
@@ -166,16 +199,17 @@ public class RocketToMoonModel extends GraphicsProgram
 		remove(moon);
 		tada();	
 	}
-	private double rocketMoonDist(GPoint rkt, GPoint moon){
-		double distance = Math.sqrt(((rkt.getX()-moon.getX())*(rkt.getX()-moon.getX()))+((rkt.getY()-moon.getY())*(rkt.getY()-moon.getY())));
+	private double rocketMoonDist(){
+		double distance = Math.sqrt(((rocket.getX()-moon.getX())*(rocket.getX()-moon.getX()))+((rocket.getY()-moon.getY())*(rocket.getY()-moon.getY())));
 		return distance;
 		
 	}
-	private double rocketEarthDist(GPoint rkt, GPoint earth){
-		double distance = Math.sqrt(((rkt.getX()-earth.getX())*(rkt.getX()-earth.getX()))+((rkt.getY()-earth.getY())*(rkt.getY()-earth.getY())));
+	private double rocketEarthDist(){
+		double distance = Math.sqrt(((rocket.getX()-earth.getX())*(rocket.getX()-earth.getX()))+((rocket.getY()-earth.getY())*(rocket.getY()-earth.getY())));
 		return distance;
 	}
 	private void splosion(){
+		explosionClip.play();
 		GStar star1 = new GStar(60);
 		GStar star2 = new GStar(60);
 		GStar star3 = new GStar(60);
@@ -224,6 +258,7 @@ public class RocketToMoonModel extends GraphicsProgram
 		
 	}
 	private void title(){
+		themeClip.play();
 		title = new GLabel("ASTRO NOT", FRAME_WIDTH/2, FRAME_HEIGHT/3);
 		title.setFont(new Font("Serif", Font.BOLD, 64));
 		title.move(-title.getWidth()/2, 0);
@@ -238,6 +273,7 @@ public class RocketToMoonModel extends GraphicsProgram
 		remove(title);
 	}
 	private void three(){
+		threeClip.play();
 		three = new GLabel("3", FRAME_WIDTH/2, FRAME_HEIGHT/3);
 		three.setFont(new Font("Serif", Font.BOLD, 64));
 		three.move(-three.getWidth()/2, 0);
@@ -247,6 +283,7 @@ public class RocketToMoonModel extends GraphicsProgram
 		remove(three);
 	}
 	private void two(){
+		twoClip.play();
 		two = new GLabel("2", FRAME_WIDTH/2, FRAME_HEIGHT/3);
 		two.setFont(new Font("Serif", Font.BOLD, 64));
 		two.move(-two.getWidth()/2, 0);
@@ -256,6 +293,7 @@ public class RocketToMoonModel extends GraphicsProgram
 		remove(two);
 	}
 	private void one(){
+		oneClip.play();
 		one = new GLabel("1", FRAME_WIDTH/2, FRAME_HEIGHT/3);
 		one.setFont(new Font("Serif", Font.BOLD, 64));
 		one.move(-one.getWidth()/2, 0);
@@ -265,6 +303,8 @@ public class RocketToMoonModel extends GraphicsProgram
 		remove(one);
 	}
 	private void liftOff(){
+		ignitionClip.play();
+		
 		liftOff = new GLabel("LIFTOFF!", FRAME_WIDTH/2, FRAME_HEIGHT/3);
 		liftOff.setFont(new Font("Serif", Font.BOLD, 64));
 		liftOff.move(-liftOff.getWidth()/2, 0);
@@ -274,6 +314,7 @@ public class RocketToMoonModel extends GraphicsProgram
 		remove(liftOff);
 	}
 	private void gameOver(){
+		gameOverClip.play();
 		gameOver = new GLabel("Well, so long then...", FRAME_WIDTH/2, FRAME_HEIGHT/3);
 		gameOver.setFont(new Font("Serif", Font.BOLD, 64));
 		gameOver.move(-gameOver.getWidth()/2, 0);
